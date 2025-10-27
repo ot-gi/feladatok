@@ -132,6 +132,24 @@
             transform: scale(1.02);
         }
 
+        /* KÉSZ GOMB (Visszaállítva!) */
+        .check-button {
+            display: block;
+            width: 200px;
+            margin: 20px auto 10px auto; 
+            padding: 12px 20px; 
+            background-color: #28a745; /* Eredeti zöld szín */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        .check-button:hover {
+            background-color: #218838; 
+        }
+
         /* Eredmény jelzések */
         .correct {
             background-color: #d4edda !important;
@@ -237,7 +255,7 @@
         let originalParent = null;
         let selectedMeaning = null; 
         
-        // ÚJ VÁLTOZÓ: Segít eldönteni, hogy kattintás vagy húzás történt
+        // VÁLTOZÓ: Segít eldönteni, hogy kattintás vagy húzás történt
         let isDragging = false; 
 
         // Fisher-Yates shuffle (keverő) függvény
@@ -338,7 +356,7 @@
             draggedItem = null; 
             originalParent = null;
             
-            // EZ AZ ÚJ RÉSZ: Rövid idő után visszaállítjuk az isDragging-et
+            // Rövid idő után visszaállítjuk az isDragging-et
             setTimeout(() => { isDragging = false; }, 50); 
         }
 
@@ -361,13 +379,17 @@
             draggedItem.style.display = 'block';
             draggedItem.classList.remove('dragging');
             
-            // Ha már van bent valami, visszatesszük a forrásba
+            // FELÜLÍRÁS LOGIKA DRAG/DROP ESETÉN: Ha már van bent valami, visszatesszük a forrásba
             if (this.children.length > 0) {
                 const existingChild = this.children[0];
                 if(existingChild.classList.contains('correct-answer-display')) {
+                    // Eltávolítja a helyes választ mutató feliratot
                     existingChild.remove();
-                } else {
+                } else if (existingChild.classList.contains('meaning')) {
+                    // Ha jelentés van benne, visszatesszük a forrásba
                     document.getElementById('meaning-source').appendChild(existingChild);
+                    // Tisztítás
+                    existingChild.classList.remove('correct', 'incorrect', 'selected');
                 }
             }
 
@@ -388,20 +410,16 @@
             });
         }
         
-        // MÓDOSÍTOTT KLIKKKEZELŐ
         function handleMeaningClick() {
-            // ÚJ ELLENŐRZÉS: Ha éppen most fejeződött be a húzás (rövid időn belül), ne futtassuk a kattintás logikát
             if (isDragging) return; 
-            
-            if (draggedItem) return; // Biztonsági ellenőrzés
+            if (draggedItem) return; 
 
             const clickedMeaning = this;
             const parentTarget = clickedMeaning.parentNode;
 
-            // 1. Ha a jelentés a FORRÁS OSZLOPBAN van (meaning-source)
+            // 1. Ha a jelentés a FORRÁS OSZLOPBAN van (meaning-source) -> Kijelölés
             if (parentTarget.id === 'meaning-source') {
                 
-                // Töröljük a korábbi kijelölést minden meaning-ről
                 document.querySelectorAll('.meaning').forEach(m => m.classList.remove('selected'));
                 
                 if (selectedMeaning === clickedMeaning) {
@@ -411,26 +429,20 @@
                     selectedMeaning = clickedMeaning;
                 }
             } 
-            // 2. Ha a jelentés a CÉLTERÜLETEN belül van (drop-target)
+            // 2. Ha a jelentés a CÉLTERÜLETEN belül van (drop-target) -> Visszavonás/Kidobás
             else if (parentTarget.classList.contains('drop-target')) {
                 
-                // Visszatesszük a forrásba!
                 document.getElementById('meaning-source').appendChild(clickedMeaning);
                 
-                // Tisztítjuk a szülő drop-target állapotát
                 parentTarget.classList.remove('correct-drop', 'incorrect-drop');
-                
-                // Tisztítjuk a jelentés állapotát
                 clickedMeaning.classList.remove('correct', 'incorrect', 'selected');
-                
-                // Töröljük a helyes válasz megjelenítését, ha volt
                 parentTarget.querySelectorAll('.correct-answer-display').forEach(el => el.remove());
 
                 selectedMeaning = null;
             }
         }
 
-        // Ezt a függvényt hívjuk meg, ha az ÜRES CÉLTERÜLETRE (drop-target) kattintunk
+        // MÓDOSÍTOTT KLIKK A CÉLTERÜLETRE (Kezeli a felülírást is)
         function handleDropTargetClick() {
             if (draggedItem) return; 
             
@@ -441,8 +453,19 @@
                 
                 const meaningToDrop = selectedMeaning;
                 
-                // Tisztítja a korábbi 'correct-answer-display' jelölést (ha volt)
-                target.querySelectorAll('.correct-answer-display').forEach(el => el.remove());
+                // FELÜLÍRÁS LOGIKA (KATTINTÁSHOZ)
+                if (target.children.length > 0) {
+                    const existingChild = target.children[0];
+                    
+                    if (existingChild.classList.contains('meaning')) {
+                        // Ha jelentés van benne, visszatesszük a forrásba
+                        document.getElementById('meaning-source').appendChild(existingChild);
+                        // Tisztítás
+                        existingChild.classList.remove('correct', 'incorrect', 'selected');
+                    }
+                    // Törli a gyerek elemet (legyen az a régi meaning vagy egy correct-answer-display)
+                    existingChild.remove(); 
+                }
                 
                 // Beilleszti az új elemet
                 target.appendChild(meaningToDrop);
@@ -534,4 +557,3 @@
     </script>
 </body>
 </html>
-
