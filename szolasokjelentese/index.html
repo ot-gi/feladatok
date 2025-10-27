@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Szólások jelentése - Teszt</title>
     <style>
-        /* Modern betűtípus (pl. Google Fonts) nélkül is a rendszer alap betűtípusaiból válogat */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto:wght@400&display=swap');
 
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #fdfdf5; /* Halvány bézs */
+            background-color: #fdfdf5;
             color: #333;
             margin: 0;
             padding: 15px;
@@ -54,7 +53,7 @@
         .saying-column, .meaning-column {
             flex: 1;
             padding: 5px; 
-            min-width: 250px; /* Alap minimum szélesség */
+            min-width: 250px;
         }
 
         /* Szólás */
@@ -78,7 +77,7 @@
             font-size: 0.9em;
         }
 
-        /* Húzható terület */
+        /* Húzható terület (Drop Target) */
         .drop-target {
             flex-grow: 1;
             padding: 5px; 
@@ -92,7 +91,8 @@
             transition: all 0.2s ease;
             min-width: 180px; 
             font-size: 0.9em;
-            text-align: center; /* Mobil nézetben üresen is kell a text-align */
+            text-align: center;
+            cursor: pointer; /* ÚJ: Jelezzük, hogy kattintható */
         }
 
         .drop-target.hover {
@@ -100,7 +100,7 @@
             background-color: #e6f0ff;
         }
 
-        /* Jelentés (húzható) */
+        /* Jelentés (húzható és kattintható) */
         .meaning {
             padding: 8px; 
             background-color: #ffe6e6;
@@ -109,16 +109,15 @@
             color: #cc0000;
             font-weight: 500;
             margin-bottom: 8px; 
-            cursor: grab;
+            cursor: pointer; /* Módosítva grab-ról pointerre, mivel kattintható */
             user-select: none;
             text-align: center;
             transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
             font-size: 0.9em;
-            /* Fontos a Drag/Drop miatt */
             touch-action: manipulation; 
         }
 
-        .meaning:hover {
+        .meaning:hover:not(.dragging) {
             opacity: 0.9;
         }
         
@@ -129,7 +128,7 @@
             z-index: 1000;
         }
         
-        /* ÚJ: Kijelölt állapot mobilhoz */
+        /* Kijelölt állapot (kattintás/érintés) */
         .meaning.selected {
             border: 3px solid #00cc00; /* Zöld keret jelzi, hogy ki van jelölve */
             background-color: #e0ffe0;
@@ -137,7 +136,7 @@
             transform: scale(1.02);
         }
 
-        /* Gomb stílus */
+        /* Gomb és eredmények (stílusok megtartva) */
         .check-button {
             display: block;
             width: 200px;
@@ -152,15 +151,6 @@
             transition: background-color 0.3s ease, transform 0.1s ease;
         }
 
-        .check-button:hover {
-            background-color: #218838;
-        }
-
-        .check-button:active {
-            transform: scale(0.98);
-        }
-        
-        /* Eredmény jelzések (megtartva) */
         .correct {
             background-color: #d4edda !important;
             border-color: #155724 !important;
@@ -172,16 +162,15 @@
             border-color: #721c24 !important;
             color: #721c24 !important;
         }
-        
-        .correct-answer-display {
-            padding: 5px; 
-            font-size: 0.9em;
-        }
 
-        .divider {
-            height: 2px;
-            background-color: #ccc;
-            margin: 15px 0; 
+        .warning-message {
+            color: #ffc107;
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 10px;
+            border: 2px solid #ffc107;
+            border-radius: 5px;
+            background-color: #fff3cd;
         }
 
         /* ****************************************************** */
@@ -189,65 +178,43 @@
         /* ****************************************************** */
         @media (max-width: 768px) {
             
-            body {
-                padding: 10px;
-            }
+            body { padding: 10px; }
+            h1 { font-size: 1.5em; }
+            h2 { font-size: 1em; }
 
-            h1 {
-                font-size: 1.5em;
-            }
-
-            h2 {
-                font-size: 1em;
-            }
-
-            /* A konténer elrendezése vertikálissá válik */
             .pairing-area {
                 flex-direction: column;
-                gap: 10px; /* Kisebb rés a mobil nézetben */
+                gap: 10px;
             }
 
             .saying-column, .meaning-column {
-                min-width: 100%; /* Teljes szélesség */
+                min-width: 100%;
                 padding: 0;
             }
 
-            /* Szólás és a drop-target a saying-item-ben egymás alatt lesz */
             .saying-item {
                 flex-direction: column;
-                align-items: stretch; /* Teljes szélességre nyúlik */
-                margin-bottom: 20px; /* Nagyobb rés a könnyebb érintés miatt */
-                border-bottom: 1px dashed #ddd; /* Elválasztó vonal */
+                align-items: stretch;
+                margin-bottom: 20px;
+                border-bottom: 1px dashed #ddd;
                 padding-bottom: 10px;
             }
             
             .saying {
-                width: auto; /* Teljes szélesség kitöltése */
+                width: auto;
                 margin-right: 0;
-                margin-bottom: 10px; /* Elválasztás a drop-targettől */
+                margin-bottom: 10px;
             }
 
             .drop-target {
-                min-height: 40px; /* Magasabb a könnyebb érintés miatt */
-                min-width: 100%; /* Teljes szélesség */
+                min-height: 40px;
+                min-width: 100%;
             }
 
-            /* A jelentések oszlopa (meaning-column) alulra kerül és jobban elválik */
             #meaning-source {
                 padding: 10px;
                 background-color: #f7f7f7;
                 border-radius: 8px;
-            }
-
-            .meaning {
-                cursor: pointer; /* Érintéshez illő kurzor */
-            }
-
-            /* Rejtett Drag/Drop stílusok, amik csak zavarnának mobilon */
-            .meaning-source .meaning.dragging {
-                display: block !important; /* Nem rejtjük el a húzott elemet touch-nál */
-                opacity: 1; 
-                transform: none;
             }
         }
     </style>
@@ -256,7 +223,7 @@
 
     <div class="test-container">
         <h1>Szólások jelentése</h1>
-        <h2>Húzd (vagy érintsd meg és párosítsd) a jelentéseket a megfelelő szólásokhoz! Két jelentés felesleges!</h2>
+        <h2>Kattints/érints a jelentésre a kijelöléshez, majd kattints/érints a célterületre a párosításhoz (Húzhatod is az egeret)! Két jelentés felesleges!</h2>
         <div class="divider"></div>
 
         <div class="pairing-area">
@@ -274,7 +241,7 @@
     </div>
 
     <script>
-        // Szólások és helyes jelentésük párok (14 db)
+        // Szólások és helyes jelentésük párok (14 db) - (Megtartva)
         const SAYINGS_DATA = [
             { saying: "Beletörik a bicskája.", meaning: "Nem sikerül neki valami, kudarcot vall." },
             { saying: "Benne van a csávában.", meaning: "Bajban van." },
@@ -292,7 +259,7 @@
             { saying: "Megleli a zsák a foltját.", meaning: "Mindenki megtalálja a hozzá méltó, hozzá illő társát, barátot." }
         ];
 
-        // Fölösleges jelentések (2 db)
+        // Fölösleges jelentések (2 db) - (Megtartva)
         const EXTRA_MEANINGS = [
             "Rosszat jósol.",
             "Jó tanácsokat ad másoknak, de ő maga rosszat cselekszik."
@@ -303,11 +270,10 @@
         
         let draggedItem = null;
         let originalParent = null;
-        
-        // ÚJ: Mobilhoz: Eltárolja az érintéssel kiválasztott jelentést
-        let selectedMeaning = null; 
+        let selectedMeaning = null; // Kijelölt jelentés (kattintás/érintés)
 
-        // Fisher-Yates shuffle (keverő) függvény
+
+        // Fisher-Yates shuffle (keverő) függvény - (Megtartva)
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -316,7 +282,9 @@
             return array;
         }
 
+        // Teszt inicializálása - (Megtartva)
         function initializeTest() {
+            // ... (A tartalom generálásának logikája) ...
             const shuffledSayings = shuffle([...SAYINGS_DATA]); 
             const correctMeanings = SAYINGS_DATA.map(item => item.meaning);
             let allMeanings = [...correctMeanings, ...EXTRA_MEANINGS];
@@ -325,19 +293,15 @@
             const sayingSource = document.getElementById('saying-source');
             sayingSource.innerHTML = ''; 
 
-            // Szólások generálása
             shuffledSayings.forEach(item => {
                 const sayingItemDiv = document.createElement('div');
                 sayingItemDiv.className = 'saying-item';
-
                 const sayingDiv = document.createElement('div');
                 sayingDiv.className = 'saying';
                 sayingDiv.textContent = item.saying;
-
                 const dropTargetDiv = document.createElement('div');
                 dropTargetDiv.className = 'drop-target';
                 dropTargetDiv.setAttribute('data-correct-meaning', item.meaning);
-
                 sayingItemDiv.appendChild(sayingDiv);
                 sayingItemDiv.appendChild(dropTargetDiv);
                 sayingSource.appendChild(sayingItemDiv);
@@ -346,27 +310,26 @@
             const meaningSource = document.getElementById('meaning-source');
             meaningSource.innerHTML = ''; 
 
-            // Jelentések generálása
             shuffledMeanings.forEach(meaningText => {
                 const meaningDiv = document.createElement('div');
                 meaningDiv.className = 'meaning';
                 meaningDiv.setAttribute('draggable', true);
                 meaningDiv.textContent = meaningText;
-                
                 const id = 'meaning-' + Math.random().toString(36).substr(2, 9);
                 meaningDiv.id = id;
                 meaningDiv.setAttribute('data-meaning-text', meaningText); 
-
                 meaningSource.appendChild(meaningDiv);
             });
             
             setupDragAndDrop();
-            // ÚJ: Touch/Click események beállítása
-            setupTouchSelect();
+            setupClickSelect(); // Megtartva, de most már desktopon is használjuk.
+            
+            // Eredmény üzenet tisztítása
+            document.getElementById('result-message').innerHTML = '';
         }
 
 
-        // --- DRAG/DROP (Egér) ESEMÉNYEK KEZELÉSE ---
+        // --- DRAG/DROP (Egér húzás) ESEMÉNYEK KEZELÉSE ---
         function setupDragAndDrop() {
             document.querySelectorAll('.meaning').forEach(meaning => {
                 meaning.addEventListener('dragstart', handleDragStart);
@@ -380,10 +343,6 @@
             });
         }
         
-        // A többi handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleDrop függvények megtartása, 
-        // mivel az alapvető Drag&Drop funkcionalitás asztali gépen továbbra is a legjobb megoldás.
-
-
         function handleDragStart(e) {
             draggedItem = this;
             originalParent = this.parentNode; 
@@ -391,32 +350,29 @@
             e.dataTransfer.setData('text/plain', this.id); 
             this.classList.add('dragging');
             
+            // Eltávolítjuk a kijelölést, ha a felhasználó inkább húzni kezdi
+            if (selectedMeaning === this) {
+                this.classList.remove('selected');
+                selectedMeaning = null;
+            }
+            
+            // Elrejtés Drag&Drop közben
             if (originalParent.id === 'meaning-source' || originalParent.classList.contains('drop-target')) {
-                // Átmenetileg elrejtjük a forrás elemet, csak ha nem mobil
-                if (!('ontouchstart' in window || navigator.maxTouchPoints)) {
-                   setTimeout(() => this.style.display = 'none', 0);
-                }
+               setTimeout(() => this.style.display = 'none', 0);
             }
         }
 
         function handleDragEnd(e) {
             this.classList.remove('dragging');
             
-            // Csak akkor állítjuk vissza, ha láthatatlan maradt, azaz Drag&Drop-ban volt
             if (this.style.display === 'none') {
                 this.style.display = 'block'; 
                 originalParent.appendChild(this);
-                
-                // Ha a drop-target volt az eredeti szülő, és hibásan maradt üresen 
-                if (originalParent.classList.contains('drop-target')) {
-                    originalParent.querySelectorAll('.correct-answer-display').forEach(el => el.remove()); 
-                }
             }
 
             draggedItem = null; 
             originalParent = null;
         }
-
 
         function handleDragOver(e) {
             e.preventDefault(); 
@@ -434,11 +390,10 @@
 
             if (!draggedItem) return;
 
-            // 1. Visszaállítja a húzott elem eredeti állapotát (láthatóvá teszi)
             draggedItem.style.display = 'block';
             draggedItem.classList.remove('dragging');
-
-            // 2. Kezeljük, ha már van bent valami: vissza kell tenni a forrás oszlopba
+            
+            // Ha már van bent valami, visszatesszük a forrásba
             if (this.children.length > 0) {
                 const existingChild = this.children[0];
                 if(existingChild.classList.contains('correct-answer-display')) {
@@ -448,22 +403,21 @@
                 }
             }
 
-            // 3. Beteszi az új elemet a drop target-be
+            // Beteszi az új elemet
             this.appendChild(draggedItem);
-
+            
             // Törli a 'megoldás ellenőrzés' osztályokat
             this.classList.remove('correct-drop', 'incorrect-drop');
             draggedItem.classList.remove('correct', 'incorrect');
             
-            draggedItem = null; // Reset a drop után
-            originalParent = null; // Reset
+            draggedItem = null;
+            originalParent = null;
         }
         // --- DRAG/DROP VÉGE ---
 
-        // --- ÚJ: TOUCH/CLICK (Mobil) ESEMÉNYEK KEZELÉSE ---
-        function setupTouchSelect() {
+        // --- KLIKK/TOUCH ESEMÉNYEK KEZELÉSE (Most már PC-n is) ---
+        function setupClickSelect() {
             document.querySelectorAll('.meaning').forEach(meaning => {
-                // Érintőképernyőkön a "grab" helyett a kijelölés a cél
                 meaning.addEventListener('click', handleMeaningClick);
             });
 
@@ -474,11 +428,14 @@
         
         // Jelentés elemre kattintás/érintés (Kijelölés)
         function handleMeaningClick() {
+            // Csak akkor dolgozunk, ha éppen nincs Drag&Drop folyamatban
+            if (draggedItem) return; 
+
             // Törli a kijelölést mindenről
             document.querySelectorAll('.meaning').forEach(m => m.classList.remove('selected'));
             
-            // Ha éppen ezt az elemet jelöltük ki, most szedjük le róla
             if (selectedMeaning === this) {
+                // Ha éppen ezt az elemet jelöltük ki, most szedjük le róla
                 selectedMeaning = null;
             } else {
                 // Kijelöljük az új elemet
@@ -489,15 +446,16 @@
         
         // Drop Target-re kattintás/érintés (Párosítás)
         function handleTargetClick() {
+            // Csak akkor dolgozunk, ha éppen nincs Drag&Drop folyamatban
+            if (draggedItem) return; 
+            
             const target = this;
 
-            // Ha van kijelölt jelentés, akkor párosítsuk
             if (selectedMeaning) {
                 
-                // 1. Megpróbáljuk a drop-ot
                 const meaningToDrop = selectedMeaning;
                 
-                // 2. Kezeljük, ha már van bent valami: vissza kell tenni a forrás oszlopba
+                // 1. Ha már van bent valami, visszatesszük a forrás oszlopba
                 if (target.children.length > 0) {
                     const existingChild = target.children[0];
                     if(existingChild.classList.contains('correct-answer-display')) {
@@ -507,10 +465,10 @@
                     }
                 }
                 
-                // 3. Beteszi az új elemet a drop target-be
+                // 2. Beteszi az új elemet
                 target.appendChild(meaningToDrop);
                 
-                // 4. Kijelölés eltávolítása és reset
+                // 3. Kijelölés eltávolítása és reset
                 meaningToDrop.classList.remove('selected');
                 target.classList.remove('correct-drop', 'incorrect-drop');
                 meaningToDrop.classList.remove('correct', 'incorrect');
@@ -524,72 +482,83 @@
                 target.classList.remove('correct-drop', 'incorrect-drop');
             }
         }
-        // --- TOUCH/CLICK VÉGE ---
+        // --- KLIKK/TOUCH VÉGE ---
 
 
-        // Segédfüggvény az üres célterületek kezelésére
+        // Segédfüggvény az üres célterületek kezelésére - (Megtartva)
         function handleEmptyTarget(target, correctMeaning) {
             target.classList.add('incorrect-drop'); 
 
-            // Megjelenítjük a helyes választ az üres helyen
             const correctDisplay = document.createElement('div');
             correctDisplay.className = 'correct-answer-display';
-            correctDisplay.textContent = correctMeaning;
+            correctDisplay.textContent = "Hiányzik! Helyes: " + correctMeaning; // Kiegészítve a jobb érthetőség kedvéért
             target.appendChild(correctDisplay);
         }
 
-        // A KÉSZ gomb megnyomásakor fut le
+        // A KÉSZ gomb megnyomásakor fut le - (MÓDOSÍTVA)
         function checkAnswers() {
             const dropTargets = document.querySelectorAll('.drop-target');
+            const resultMessage = document.getElementById('result-message');
             let finalScore = 0;
+            let allPaired = true;
 
-            // 1. Ellenőrizzük a párosításokat (14 pont)
+            // 1. Ellenőrizzük, hogy minden szóláshoz tartozik-e jelentés
+            dropTargets.forEach(target => {
+                // Megtisztítjuk a korábbi vizuális jelöléseket és megoldás kijelzéseket
+                target.classList.remove('correct-drop', 'incorrect-drop');
+                target.querySelectorAll('.correct-answer-display').forEach(el => el.remove());
+                
+                if (target.children.length === 0 || !target.children[0].classList.contains('meaning')) {
+                    allPaired = false;
+                }
+            });
+
+            if (!allPaired) {
+                // Ha hiányzik párosítás, figyelmeztető üzenet jelenik meg
+                resultMessage.innerHTML = `<span class="warning-message">⚠️ Kérlek, társíts jelentést minden szóláshoz, mielőtt leellenőrzöd!</span>`;
+                resultMessage.style.color = 'inherit'; // A warning message felülírja
+                // Jelentések jelölésének törlése is
+                document.querySelectorAll('#meaning-source .meaning').forEach(meaning => {
+                    meaning.classList.remove('correct', 'incorrect', 'selected');
+                });
+                return; // Megállítja a pontszámítást
+            }
+
+
+            // 2. Minden párosítva van, elkezdjük a pontszámítást és visszajelzést
             dropTargets.forEach(target => {
                 const correctMeaning = target.getAttribute('data-correct-meaning');
-                target.classList.remove('correct-drop', 'incorrect-drop');
-                
-                // Töröljük a korábbi megoldás kijelzést, ha van
-                target.querySelectorAll('.correct-answer-display').forEach(el => el.remove()); 
+                const droppedMeaning = target.children[0];
+                const droppedMeaningText = droppedMeaning.getAttribute('data-meaning-text');
 
-                if (target.children.length > 0 && target.children[0].classList.contains('meaning')) {
-                    // Van bedobott jelentés
-                    const droppedMeaning = target.children[0];
-                    const droppedMeaningText = droppedMeaning.getAttribute('data-meaning-text');
+                droppedMeaning.classList.remove('correct', 'incorrect', 'selected');
 
-                    // Tisztítás
-                    droppedMeaning.classList.remove('correct', 'incorrect', 'selected'); // 'selected' eltávolítása
-
-                    if (droppedMeaningText === correctMeaning) {
-                        // Helyes párosítás
-                        finalScore++;
-                        target.classList.add('correct-drop');
-                        droppedMeaning.classList.add('correct');
-                    } else {
-                        // Rossz párosítás
-                        target.classList.add('incorrect-drop');
-                        droppedMeaning.classList.add('incorrect');
-                    }
+                if (droppedMeaningText === correctMeaning) {
+                    finalScore++;
+                    target.classList.add('correct-drop');
+                    droppedMeaning.classList.add('correct');
                 } else {
-                    // Nincs bedobott jelentés (üresen maradt)
+                    target.classList.add('incorrect-drop');
+                    droppedMeaning.classList.add('incorrect');
+                    
+                    // Megjelenítjük a helyes választ, ha rosszul párosítottak
                     handleEmptyTarget(target, correctMeaning);
                 }
             });
 
-            // 2. Fölösleges jelentések (csak a vizuális jelölés tisztítása)
+            // 3. Fölösleges jelentések jelölésének tisztítása
             document.querySelectorAll('#meaning-source .meaning').forEach(meaning => {
                 meaning.classList.remove('correct', 'incorrect', 'selected');
             });
 
-            // 3. Eredmény üzenet
-            const resultMessage = document.getElementById('result-message');
+
+            // 4. Eredmény üzenet megjelenítése
             const percentage = Math.round((finalScore / MAX_SCORE) * 100);
             
-            // Megjeleníti a kért formátumban: X/14 és a százalék
-            resultMessage.innerHTML = `**Eredményed: ${finalScore}/${MAX_SCORE} helyes párosítás** (${percentage}%)`;
+            resultMessage.innerHTML = `**✅ Eredményed: ${finalScore}/${MAX_SCORE} helyes párosítás** (${percentage}%)`;
             resultMessage.style.color = finalScore === MAX_SCORE ? '#155724' : '#cc0000';
             
-            // Reseteljük a kijelölést
-            selectedMeaning = null;
+            selectedMeaning = null; // Reset
         }
 
         // Teszt indításakor fut le
@@ -597,4 +566,3 @@
     </script>
 </body>
 </html>
-
