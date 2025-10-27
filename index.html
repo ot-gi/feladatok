@@ -2,31 +2,77 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Feladatok Gyűjteménye</title>
+    <title>Interaktív Feladatok Gyűjteménye</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 600px; margin: auto; }
-        h1 { color: #333; }
-        ul { list-style-type: none; padding: 0; }
-        li { margin-bottom: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 5px; }
-        a { text-decoration: none; color: #007bff; font-weight: bold; }
-        a:hover { text-decoration: underline; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f7f6; 
+            color: #333; 
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 { 
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 300px széles oszlopok, ha elfér */
+            gap: 20px;
+        }
+        .task-card {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+        }
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .task-card a {
+            display: block;
+            padding: 20px;
+            text-decoration: none;
+            color: #333;
+        }
+        .task-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        .task-desc {
+            font-size: 0.9em;
+            color: #666;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Nyitott Kapu: Feladatok</h1>
+    <div class="container">
+        <h1>Interaktív Nyelvtani Feladatok</h1>
 
-    <p>Válassz a témakörök közül:</p>
-
-    <ul>
-        <li>
-            <a href="./szolasokjelentese/">1. Szólások jelentése (Párosító)</a>
-        </li>
-
-        <li>
-            <a href="./szofajok/">2. Szófajok gyakorlása</a>
-        </li>
-    </ul>
+        <div class="task-grid">
+            
+            <div class="task-card">
+                <a href="./szolasokjelentese/">
+                    <div class="task-title">1. Szólások Jelentése</div>
+                    <div class="task-desc">Párosító feladat: Keresd meg a szólások helyes magyarázatát!</div>
+                </a>
+            </div>
+            
+            </div>
+    </div>
 
 </body>
 </html>
