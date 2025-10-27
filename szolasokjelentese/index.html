@@ -92,7 +92,6 @@
             min-width: 180px; 
             font-size: 0.9em;
             text-align: center;
-            /* Fontos: A drop-target is kap kattintás eseményt, nem csak a benne lévő meaning */
             cursor: pointer; 
         }
 
@@ -133,7 +132,7 @@
             transform: scale(1.02);
         }
 
-        /* KÉSZ GOMB DIZAJN */
+        /* KÉSZ GOMB DIZAJN VASTAGÍTVA */
         .check-button {
             display: block;
             width: 200px;
@@ -145,7 +144,7 @@
             border-radius: 8px;
             font-size: 1em;
             cursor: pointer;
-            font-weight: bold; /* Ezzel lett vastag a szöveg */
+            font-weight: bold; 
             transition: background-color 0.3s ease, transform 0.1s ease;
         }
         .check-button:hover {
@@ -271,8 +270,7 @@
         // Teszt inicializálása
         function initializeTest() {
             const shuffledSayings = shuffle([...SAYINGS_DATA]); 
-            const correctMeanings = SAYINGS_DATA.map(item => item.meaning);
-            let allMeanings = [...correctMeanings, ...EXTRA_MEANINGS];
+            let allMeanings = [...SAYINGS_DATA.map(item => item.meaning), ...EXTRA_MEANINGS];
             const shuffledMeanings = shuffle(allMeanings);
 
             const sayingSource = document.getElementById('saying-source');
@@ -287,7 +285,7 @@
                 const dropTargetDiv = document.createElement('div');
                 dropTargetDiv.className = 'drop-target';
                 dropTargetDiv.setAttribute('data-correct-meaning', item.meaning);
-                // A dropTargetDiv kapja a kattintás eseményt a párosításhoz
+                // Csak az ÜRES drop target-en lévő kattintást kezeli
                 dropTargetDiv.addEventListener('click', handleDropTargetClick); 
                 sayingItemDiv.appendChild(sayingDiv);
                 sayingItemDiv.appendChild(dropTargetDiv);
@@ -305,7 +303,7 @@
                 const id = 'meaning-' + Math.random().toString(36).substr(2, 9);
                 meaningDiv.id = id;
                 meaningDiv.setAttribute('data-meaning-text', meaningText); 
-                // A meaning Div kapja a kattintás eseményt a kijelöléshez és visszadobáshoz
+                // A meaning Div kezeli a kijelölést, visszadobást és a FOGLALT helyre való kattintásos felülírást
                 meaningDiv.addEventListener('click', handleMeaningClick); 
                 meaningSource.appendChild(meaningDiv);
             });
@@ -315,7 +313,7 @@
             document.getElementById('result-message').innerHTML = '';
         }
 
-        // --- DRAG/DROP (Egér húzás) ESEMÉNYEK KEZELÉSE ---
+        // --- DRAG/DROP ESEMÉNYEK KEZELÉSE ---
         function setupDragAndDrop() {
             document.querySelectorAll('.meaning').forEach(meaning => {
                 meaning.addEventListener('dragstart', handleDragStart);
@@ -387,7 +385,7 @@
                 if(existingChild.classList.contains('correct-answer-display')) {
                     existingChild.remove();
                 } else if (existingChild.classList.contains('meaning')) {
-                    // Ha jelentés van benne, visszadobjuk a forrásba
+                    // VISSZADOBÁS A FORRÁSBA
                     document.getElementById('meaning-source').appendChild(existingChild);
                     existingChild.classList.remove('correct', 'incorrect', 'selected');
                 }
@@ -406,8 +404,11 @@
 
         // --- KLIKK/TOUCH ESEMÉNYEK KEZELÉSE ---
         
-        // Jelentés kattintás (kijelölés VAGY visszadobás a forrásba)
-        function handleMeaningClick() {
+        // MÓDOSÍTOTT: Jelentés kattintás (kijelölés VAGY felülírás/visszadobás)
+        function handleMeaningClick(e) {
+            // Ezzel biztosítjuk, hogy a kattintás a meaning-re történjen, nem pedig a mögötte lévő drop-target-re.
+            e.stopPropagation(); 
+            
             if (isDragging) return; 
             if (draggedItem) return; 
 
@@ -428,18 +429,20 @@
             } 
             // 2. Ha a jelentés a CÉLTERÜLETEN belül van (drop-target)
             else if (parentTarget.classList.contains('drop-target')) {
-                // Ha van kijelölt (selectedMeaning) jelentés máshonnan, akkor ezt a helyet akarjuk FELÜLÍRNI a selectedMeaning-gel.
+                // A dropTarget most a clickedMeaning szülője
+                const dropTarget = parentTarget; 
+                
+                // Ha van KIJELÖLT (selectedMeaning) jelentés máshonnan -> CSINÁLJUK A CSERÉT
                 if (selectedMeaning) {
                     
                     const meaningToDrop = selectedMeaning;
                     const oldMeaning = clickedMeaning;
-                    const dropTarget = parentTarget;
 
-                    // 1. A régi (rossz) jelentés visszadobása a forrásba
+                    // 1. A régi jelentés visszadobása a forrásba
                     document.getElementById('meaning-source').appendChild(oldMeaning);
                     oldMeaning.classList.remove('correct', 'incorrect', 'selected');
                     
-                    // 2. Az új (jó) jelentés behelyezése
+                    // 2. Az új jelentés behelyezése
                     dropTarget.appendChild(meaningToDrop);
                     
                     // 3. Tisztítás és reset
@@ -449,25 +452,25 @@
                     selectedMeaning = null;
 
                 } else {
-                    // Ha NINCS kijelölve jelentés, akkor ez a kattintás a VISSZADOBÁS a forrásba.
+                    // Ha NINCS kijelölve jelentés -> VISSZADOBÁS a forrásba (kattintással eltávolítás)
                     document.getElementById('meaning-source').appendChild(clickedMeaning);
-                    parentTarget.classList.remove('correct-drop', 'incorrect-drop');
+                    dropTarget.classList.remove('correct-drop', 'incorrect-drop');
                     clickedMeaning.classList.remove('correct', 'incorrect', 'selected');
-                    parentTarget.querySelectorAll('.correct-answer-display').forEach(el => el.remove());
+                    dropTarget.querySelectorAll('.correct-answer-display').forEach(el => el.remove());
 
                     selectedMeaning = null;
                 }
             }
         }
 
-        // Célterület kattintás (csak ha a target ÜRES)
+        // ÚJ: Célterület kattintás (csak ha a target ÜRES)
         function handleDropTargetClick() {
             if (draggedItem) return; 
             
             const target = this;
 
             // Csak akkor csinálunk valamit, ha van kijelölt jelentés (selectedMeaning)
-            // ÉS ha a célterület ÜRES (ha foglalt, azt a meaning-re kattintás kezeli)
+            // ÉS ha a célterület ÜRES (target.children.length === 0)
             if (selectedMeaning && target.children.length === 0) {
                 
                 const meaningToDrop = selectedMeaning;
